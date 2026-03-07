@@ -356,11 +356,15 @@ class RewardCommission(UI, InfoHandler):
             if self.info_bar_count():
                 break
             if count >= 3:
-                # Restart game and handle commission recommend bug.
                 # After you click "Recommend", your ships appear and then suddenly disappear.
                 # At the same time, the icon of commission is flashing.
-                logger.warning('Triggered commission list flashing bug')
-                raise GameStuckError('Triggered commission list flashing bug')
+                # This may happen on new accounts without level 100 ships.
+                if self.config.Commission_SkipWhenNoShips:
+                    logger.warning('Triggered commission list flashing bug, skipping commission')
+                    return False
+                else:
+                    logger.warning('Triggered commission list flashing bug')
+                    raise GameStuckError('Triggered commission list flashing bug')
 
             # Click
             if self.match_template_color(COMMISSION_START, offset=(5, 20), interval=7):

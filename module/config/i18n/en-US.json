@@ -1355,6 +1355,10 @@
     "DoMajorCommission": {
       "name": "Do Major Commissions",
       "help": "1200 oil commission is now outdated, the yield is very low, it is recommended to disable"
+    },
+    "SkipWhenNoShips": {
+      "name": "Skip Commissions If No Ships Available",
+      "help": "For new accounts only. If the game cannot auto-assign ships (e.g. no level 100 ships), skip the commission instead of restarting the game"
     }
   },
   "Tactical": {
