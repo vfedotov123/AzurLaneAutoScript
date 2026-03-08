@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+import time
 from datetime import datetime
 
 import cv2
@@ -114,6 +115,13 @@ class DockScan(Dock):
             if count % 100 == 0:
                 logger.info(f'Intermediate save at {count} ships')
                 self.export_csv()
+
+            # Clear click record to prevent GameTooManyClickError
+            # since dock scan legitimately swipes many times
+            self.device.click_record_clear()
+
+            # Small delay before swipe to let the UI settle
+            time.sleep(0.3)
 
             # Swipe to next ship
             # Using SHIP_DETAIL_CHECK as check_button instead of default EQUIPMENT_OPEN
