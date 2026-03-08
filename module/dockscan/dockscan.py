@@ -94,6 +94,7 @@ class DockScan(Dock):
 
             # Save first screenshot for debugging coordinate calibration
             if count == 0:
+                os.makedirs('./screenshots', exist_ok=True)
                 self.device.image_save('./screenshots/dock_scan_debug.png')
                 logger.info('Debug screenshot saved to ./screenshots/dock_scan_debug.png')
 
