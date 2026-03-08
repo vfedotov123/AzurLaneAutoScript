@@ -130,6 +130,7 @@ class RewardCommission(UI, InfoHandler):
                 self.max_commission = 5
         running_count = int(
             np.sum([1 for c in total if c.status == 'running']))
+        self._running_count = running_count
         logger.attr('Running', f'{running_count}/{self.max_commission}')
 
         # Load filter string
@@ -335,7 +336,9 @@ class RewardCommission(UI, InfoHandler):
             skip_first_screenshot:
 
         Returns:
-            bool: If success
+            True if commission started successfully,
+            False if wrong commission selected,
+            'no_ships' if no suitable ships available (flashing bug).
 
         Pages:
             in: page_commission
@@ -361,7 +364,7 @@ class RewardCommission(UI, InfoHandler):
                 # This may happen on new accounts without level 100 ships.
                 if self.config.Commission_SkipWhenNoShips:
                     logger.warning('Triggered commission list flashing bug, skipping commission')
-                    return False
+                    return 'no_ships'
                 else:
                     logger.warning('Triggered commission list flashing bug')
                     raise GameStuckError('Triggered commission list flashing bug')
@@ -438,9 +441,16 @@ class RewardCommission(UI, InfoHandler):
                     if new_comm == comm:
                         current = new_comm
                 if current is not None:
-                    if self._commission_start_click(current, is_urgent=is_urgent):
+                    result = self._commission_start_click(current, is_urgent=is_urgent)
+                    if result is True:
                         self.device.click_record_clear()
                         return True
+                    elif result == 'no_ships':
+                        logger.warning(f'No suitable ships for commission: {comm}')
+                        self._commission_mode_reset()
+                        self._commission_swipe_to_top()
+                        self.device.click_record_clear()
+                        return 'no_ships'
                     else:
                         self._commission_mode_reset()
                         self._commission_swipe_to_top()
@@ -469,6 +479,8 @@ class RewardCommission(UI, InfoHandler):
     def commission_start(self):
         """
         Scan and Start all chosen commissions.
+        When a commission is skipped due to no suitable ships,
+        try fallback commissions from the filtered pool.
 
         Pages:
             in: page_commission
@@ -477,24 +489,79 @@ class RewardCommission(UI, InfoHandler):
         self._commission_scan_all()
 
         logger.hr('Commission run', level=1)
-        if self.daily_choose:
-            for comm in self.daily_choose:
+        if not self.daily_choose and not self.urgent_choose:
+            logger.info('No commission chose')
+            return
+
+        started = 0
+        available_slots = self.max_commission - self._running_count
+        skipped_no_ships = 0
+        tried = SelectedGrids([])
+
+        # Try chosen daily commissions
+        for comm in self.daily_choose:
+            if started >= available_slots:
+                break
+            tried = tried.add_by_eq(SelectedGrids([comm]))
+            self._commission_ensure_mode('daily')
+            self._commission_swipe_to_top()
+            self.handle_info_bar()
+            result = self._commission_find_and_start(comm, is_urgent=False)
+            if result is True:
+                comm.convert_to_running()
+                started += 1
+            elif result == 'no_ships':
+                skipped_no_ships += 1
+            self._commission_mode_reset()
+
+        # Try chosen urgent commissions
+        for comm in self.urgent_choose:
+            if started >= available_slots:
+                break
+            tried = tried.add_by_eq(SelectedGrids([comm]))
+            self._commission_ensure_mode('urgent')
+            self._commission_swipe_to_top()
+            self.handle_info_bar()
+            result = self._commission_find_and_start(comm, is_urgent=True)
+            if result is True:
+                comm.convert_to_running()
+                started += 1
+            elif result == 'no_ships':
+                skipped_no_ships += 1
+            self._commission_mode_reset()
+
+        # Fallback: try next commissions from filtered pool
+        # when some were skipped due to no suitable ships
+        if skipped_no_ships and started < available_slots:
+            logger.hr('Commission fallback', level=2)
+            logger.info(f'{skipped_no_ships} commission(s) skipped due to no ships, trying alternatives')
+            fallback = self.comm_choose.delete(tried)
+            fallback_daily = fallback.intersect_by_eq(self.daily)
+            fallback_urgent = fallback.intersect_by_eq(self.urgent)
+
+            for comm in fallback_daily:
+                if started >= available_slots:
+                    break
                 self._commission_ensure_mode('daily')
                 self._commission_swipe_to_top()
                 self.handle_info_bar()
-                if self._commission_find_and_start(comm, is_urgent=False):
+                result = self._commission_find_and_start(comm, is_urgent=False)
+                if result is True:
                     comm.convert_to_running()
+                    started += 1
                 self._commission_mode_reset()
-        if self.urgent_choose:
-            for comm in self.urgent_choose:
+
+            for comm in fallback_urgent:
+                if started >= available_slots:
+                    break
                 self._commission_ensure_mode('urgent')
                 self._commission_swipe_to_top()
                 self.handle_info_bar()
-                if self._commission_find_and_start(comm, is_urgent=True):
+                result = self._commission_find_and_start(comm, is_urgent=True)
+                if result is True:
                     comm.convert_to_running()
+                    started += 1
                 self._commission_mode_reset()
-        if not self.daily_choose and not self.urgent_choose:
-            logger.info('No commission chose')
 
     def commission_receive(self, skip_first_screenshot=True):
         """
