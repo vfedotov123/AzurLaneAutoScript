@@ -92,6 +92,11 @@ class DockScan(Dock):
         while True:
             self.device.screenshot()
 
+            # Save first screenshot for debugging coordinate calibration
+            if count == 0:
+                self.device.image_save('./screenshots/dock_scan_debug.png')
+                logger.info('Debug screenshot saved to ./screenshots/dock_scan_debug.png')
+
             # Read ship data from current detail page
             ship_data = self.read_ship_detail()
             count += 1
