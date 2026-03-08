@@ -455,5 +455,8 @@ class GeneratedConfig:
     # Group `GameManager`
     GameManager_AutoRestart = True
 
+    # Group `DockScan`
+    DockScan_OutputFile = './dock_scan_result.csv'
+
     # Group `Storage`
     Storage_Storage = {}

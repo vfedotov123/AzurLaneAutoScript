@@ -763,3 +763,7 @@ AzurLaneUncensored:
     display: disabled
 GameManager:
   AutoRestart: true
+DockScan:
+  OutputFile:
+    value: ./dock_scan_result.csv
+    valuetype: str

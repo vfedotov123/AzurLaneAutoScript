@@ -277,6 +277,10 @@
     "GameManager": {
       "name": "Game Manager(WIP)",
       "help": ""
+    },
+    "DockScan": {
+      "name": "Dock Scan",
+      "help": ""
     }
   },
   "Scheduler": {
@@ -2618,6 +2622,16 @@
     "AutoRestart": {
       "name": "Automatic Login",
       "help": "Log back into the game when the game has been ended."
+    }
+  },
+  "DockScan": {
+    "_info": {
+      "name": "Dock Scan",
+      "help": "Scan all ships in dock and export name, level, and limit break stars to CSV file."
+    },
+    "OutputFile": {
+      "name": "Output File",
+      "help": "Path to save the CSV scan results."
     }
   },
   "Storage": {

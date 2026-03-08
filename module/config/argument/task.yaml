@@ -343,3 +343,5 @@ Tool:
       - AzurLaneUncensored
     GameManager:
       - GameManager
+    DockScan:
+      - DockScan

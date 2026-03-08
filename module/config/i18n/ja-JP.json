@@ -277,6 +277,10 @@
     "GameManager": {
       "name": "Game Manager(WIP)",
       "help": ""
+    },
+    "DockScan": {
+      "name": "Dock Scan",
+      "help": ""
     }
   },
   "Scheduler": {
@@ -2618,6 +2622,16 @@
     "AutoRestart": {
       "name": "GameManager.AutoRestart.name",
       "help": "GameManager.AutoRestart.help"
+    }
+  },
+  "DockScan": {
+    "_info": {
+      "name": "DockScan._info.name",
+      "help": "DockScan._info.help"
+    },
+    "OutputFile": {
+      "name": "DockScan.OutputFile.name",
+      "help": "DockScan.OutputFile.help"
     }
   },
   "Storage": {

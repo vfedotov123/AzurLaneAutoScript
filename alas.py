@@ -431,6 +431,10 @@ class AzurLaneAutoScript:
         from module.daemon.game_manager import GameManager
         GameManager(config=self.config, device=self.device, task="GameManager").run()
 
+    def dock_scan(self):
+        from module.dockscan.dockscan import DockScan
+        DockScan(config=self.config, device=self.device, task="DockScan").run()
+
     def wait_until(self, future):
         """
         Wait until a specific time.
