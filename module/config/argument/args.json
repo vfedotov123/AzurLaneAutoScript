@@ -6551,6 +6551,10 @@
       "DoMajorCommission": {
         "type": "checkbox",
         "value": false
+      },
+      "SkipWhenNoShips": {
+        "type": "checkbox",
+        "value": false
       }
     },
     "Storage": {

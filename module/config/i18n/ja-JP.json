@@ -1355,6 +1355,10 @@
     "DoMajorCommission": {
       "name": "Commission.DoMajorCommission.name",
       "help": "Commission.DoMajorCommission.help"
+    },
+    "SkipWhenNoShips": {
+      "name": "Commission.SkipWhenNoShips.name",
+      "help": "Commission.SkipWhenNoShips.help"
     }
   },
   "Tactical": {
