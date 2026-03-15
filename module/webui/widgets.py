@@ -93,6 +93,7 @@ class RichLog:
         # self._callback_thread = None
         # self._width = 80
         self.keep_bottom = True
+        self.active = True
         if State.theme == "dark":
             self.terminal_theme = DARK_TERMINAL_THEME
         else:
@@ -112,7 +113,7 @@ class RichLog:
         return html
 
     def extend(self, text):
-        if text:
+        if text and self.active:
             run_js(
                 """$("#pywebio-scope-{scope}>div").append(text);
             """.format(
@@ -124,6 +125,8 @@ class RichLog:
                 self.scroll()
 
     def reset(self):
+        if not self.active:
+            return
         run_js(f"""$("#pywebio-scope-{self.scope}>div").empty();""")
 
     def scroll(self) -> None:
@@ -190,6 +193,8 @@ class RichLog:
         yield
         try:
             while True:
+                if not self.active:
+                    return
                 last_idx = len(pm.renderables)
                 html = "".join(map(self.render, pm.renderables[:]))
                 self.reset()
@@ -197,6 +202,8 @@ class RichLog:
                 counter = last_idx
                 while counter < pm.renderables_max_length * 2:
                     yield
+                    if not self.active:
+                        return
                     idx = len(pm.renderables)
                     if idx < last_idx:
                         last_idx -= pm.renderables_reduce_length
