@@ -277,6 +277,10 @@
     "GameManager": {
       "name": "游戏管理器(未完成)",
       "help": ""
+    },
+    "DockScan": {
+      "name": "船坞扫描",
+      "help": ""
     }
   },
   "Scheduler": {
@@ -2624,6 +2628,16 @@
     "AutoRestart": {
       "name": "自动登录",
       "help": "游戏被强制结束后自动登录游戏"
+    }
+  },
+  "DockScan": {
+    "_info": {
+      "name": "船坞扫描",
+      "help": "扫描船坞中所有船只，导出名称、等级和突破星数到CSV文件"
+    },
+    "OutputFile": {
+      "name": "输出文件",
+      "help": "CSV扫描结果的保存路径"
     }
   },
   "Storage": {

@@ -120,6 +120,9 @@ class AlasGUI(Frame):
         self.inst_cache = []
         self.load_home = False
         self.af_flag = False
+        # Guard flag to prevent background tasks from writing to DOM during account switching
+        self._switching = False
+        self._overview_log = None
 
     @use_scope("aside", clear=True)
     def set_aside(self) -> None:
@@ -390,6 +393,11 @@ class AlasGUI(Frame):
 
     @use_scope("content", clear=True)
     def alas_overview(self) -> None:
+        # Deactivate previous log to prevent stale background writes
+        if self._overview_log is not None:
+            self._overview_log.active = False
+            self._overview_log = None
+
         self.init_menu(name="Overview")
         self.set_title(t(f"Gui.MenuAlas.Overview"))
 
@@ -442,6 +450,7 @@ class AlasGUI(Frame):
         )
 
         log = RichLog("log")
+        self._overview_log = log
 
         with use_scope("logs"):
             put_scope(
@@ -563,7 +572,7 @@ class AlasGUI(Frame):
             logger.exception(e)
 
     def alas_update_overview_task(self) -> None:
-        if not self.visible:
+        if not self.visible or self._switching:
             return
         self.alas_config.load()
         self.alas_config.get_next_task()
@@ -1026,6 +1035,11 @@ class AlasGUI(Frame):
         if config_name == self.alas_name:
             self.expand_menu()
             return
+        self._switching = True
+        # Deactivate current log to stop background writes to destroyed DOM
+        if self._overview_log is not None:
+            self._overview_log.active = False
+            self._overview_log = None
         self.init_aside(name=config_name)
         clear("content")
         self.alas_name = config_name
@@ -1035,6 +1049,7 @@ class AlasGUI(Frame):
         self.state_switch.switch()
         self.initial()
         self.alas_set_menu()
+        self._switching = False
 
     def ui_add_alas(self) -> None:
         with popup(t("Gui.AddAlas.PopupTitle")) as s:

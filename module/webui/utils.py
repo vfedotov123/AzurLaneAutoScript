@@ -178,11 +178,21 @@ class TaskHandler:
     def remove_pending_task(self) -> None:
         """
         Remove all pending remove tasks.
+        If a removed task is currently executing, wait briefly for it to finish
+        to prevent DOM writes to destroyed scopes during account switching.
         """
+        removing = list(self.pending_remove_tasks)
         with self._lock:
             for task in self.pending_remove_tasks:
                 self._remove_task(task)
             self.pending_remove_tasks = []
+        # Wait for in-flight task to finish if it was just removed
+        current = self._task
+        if current is not None and current in removing:
+            for _ in range(20):
+                if self._task is not current:
+                    break
+                time.sleep(0.005)
 
     def remove_current_task(self) -> None:
         self.remove_task(self._task, nowait=True)

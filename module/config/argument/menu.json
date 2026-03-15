@@ -105,7 +105,8 @@
       "EventStory",
       "Benchmark",
       "AzurLaneUncensored",
-      "GameManager"
+      "GameManager",
+      "DockScan"
     ]
   }
 }

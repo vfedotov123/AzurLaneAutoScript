@@ -9333,5 +9333,22 @@
         "display": "disabled"
       }
     }
+  },
+  "DockScan": {
+    "DockScan": {
+      "OutputFile": {
+        "type": "input",
+        "value": "./dock_scan_result.csv",
+        "valuetype": "str"
+      }
+    },
+    "Storage": {
+      "Storage": {
+        "type": "storage",
+        "value": {},
+        "valuetype": "ignore",
+        "display": "disabled"
+      }
+    }
   }
 }
