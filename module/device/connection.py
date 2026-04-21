@@ -431,15 +431,34 @@ class Connection(ConnectionAttr):
                 logger.info(f'Connecting to local emulator, using host 127.0.0.1')
                 port = random_port(self.config.FORWARD_PORT_RANGE)
                 return '127.0.0.1', port, "10.0.2.2", port
-            # Get host IP
+            # Get host IP(s)
             try:
-                host = socket.gethostbyname(socket.gethostname())
+                hosts = socket.gethostbyname_ex(socket.gethostname())[2]
             except socket.gaierror as e:
                 logger.error(e)
                 logger.error(f'Unknown host name: {socket.gethostname()}')
-                host = '127.0.0.1'
+                hosts = []
             # Fixup linux AVD host
-            if IS_LINUX and host == '127.0.1.1':
+            if IS_LINUX:
+                hosts = ['127.0.0.1' if h == '127.0.1.1' else h for h in hosts]
+            # Drop loopback and APIPA addresses
+            routable = [h for h in hosts if not h.startswith('127.') and not h.startswith('169.254.')]
+            logger.info(f'Current hosts: {hosts}')
+            # Multiple routable IPs usually means VPN / extra virtual adapter is active,
+            # and gethostbyname() may return an IP the emulator can't reach.
+            # Fall back to ADB reverse, which tunnels through ADB and ignores host routing.
+            if not self.is_avd and len(routable) > 1:
+                host = '127.0.0.1'
+                logger.info(
+                    f'Multiple host IPs detected (likely VPN), using host {host} with adb reverse'
+                )
+                port = self.adb_reverse(f'tcp:{self.config.REVERSE_SERVER_PORT}')
+                return host, port, host, self.config.REVERSE_SERVER_PORT
+            if routable:
+                host = routable[0]
+            elif hosts:
+                host = hosts[0]
+            else:
                 host = '127.0.0.1'
             logger.info(f'Connecting to local emulator, using host {host}')
             port = random_port(self.config.FORWARD_PORT_RANGE)
